@@ -1,11 +1,11 @@
 {
-  "version": "4.0.9",
-  "name": "cordova-plugin-googleplus",
+  "version": "1.0.0",
+  "name": "xenious-cordova-plugin-googleplus",
   "cordova_name": "Google+",
   "description": "Use your Google account to authenticate with the app.",
   "license": "MIT",
-  "repo": "https://github.com/EddyVerbruggen/cordova-plugin-googleplus.git",
-  "issue": "https://github.com/EddyVerbruggen/cordova-plugin-googleplus/issues",
+  "repo": "https://github.com/XeniousSoftware/cordova-plugin-googleplus.git",
+  "issue": "https://github.com/XeniousSoftware/cordova-plugin-googleplus/issues",
   "keywords": [
     "Google",
     "Google SignIn",
