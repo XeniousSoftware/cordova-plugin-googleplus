@@ -1,10 +1,6 @@
 # Google Sign-In Cordova/PhoneGap Plugin
-by [Eddy Verbruggen](http://twitter.com/eddyverbruggen)  
-
-3/29/2016:
-Forked and Updated by Sam Muggleworth ([PointSource, LLC](https://github.com/PointSource))
-
-*ATTENTION: The NPM registry currently returns an older version of this plugin. This README contains documentation for the most recent version.*
+by [Eddy Verbruggen](http://twitter.com/eddyverbruggen),
+with great assistance from Sam Muggleworth ([PointSource, LLC](https://github.com/PointSource))
 
 ## 0. Index
 
@@ -18,12 +14,11 @@ Forked and Updated by Sam Muggleworth ([PointSource, LLC](https://github.com/Poi
 8. [Exchanging the `serverAuthCode`](#8-exchanging-the-serverauthcode)
 9. [Troubleshooting](#9-troubleshooting)
 10. [Changelog](#10-changelog)
-11. [License](#11-license)
 
 ## 1. Description
 
 This plugin allows you to authenticate and identify users with [Google Sign-In](https://developers.google.com/identity/) on [iOS](https://developers.google.com/identity/sign-in/ios/) and [Android](https://developers.google.com/identity/sign-in/android/).
-Out of the box, you'll get email, display name, profile picture url, and user id.
+Out of the box, you'll get email, display name, given name, family name, profile picture url, and user id.
 You can also configure it to get an [idToken](#7-exchanging-the-idtoken) and [serverAuthCode](#8-exchanging-the-serverauthcode).
 
 This plugin only wraps access to the Google Sign-In API. Further API access should be implemented per use-case, per developer.
@@ -47,6 +42,18 @@ To communicate with Google you need to do some tedious setup, sorry.
 
 It is (strongly) recommended that you use the same project for both iOS and Android.
 
+### Before you proceed
+Go into your `config.xml` and make sure that your package name (i.e. the app ID) is what you want it to be. Use this package name when setting up iOS and Android in the following steps! If you don't, you will likely get a 12501, 'user cancelled' error despite never cancelling the log in process.
+
+This step is _especially_ important if you are using a framework such as Ionic to scaffold out your project. When you create the project, the `config.xml` has a placeholder packagename, e.g. com.ionic.*, so you can start developing right away.
+
+```xml
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="** REPLACE THIS VALUE **" ...>
+...
+</widget>
+```
+
 ### iOS
 To get your iOS `REVERSED_CLIENT_ID`, [generate a configuration file here](https://developers.google.com/mobile/add?platform=ios&cntapi=signin).
 This `GoogleService-Info.plist` file contains the `REVERSED_CLIENT_ID` you'll need during installation. _This value is only needed for iOS._
@@ -58,8 +65,14 @@ Login on iOS takes the user to a [SafariViewController](https://developer.apple.
 ### Android
 To configure Android, [generate a configuration file here](https://developers.google.com/mobile/add?platform=android&cntapi=signin). Once Google Sign-In is enabled Google will automatically create necessary credentials in Developer Console. There is no need to add the generated google-services.json file into your cordova project.
 
-Make sure you execute the `keytool` steps as explained [here](https://developers.google.com/drive/android/auth) or authentication will fail.
+Make sure you execute the `keytool` steps as explained [here](https://developers.google.com/android/guides/client-auth) or authentication will fail.
 
+IMPORTANT:
+* The step above, about `keytool`, show 2 types of certificate fingerprints, the **Release** and the **Debug**, when generating the configuration file, it's better to use the **Debug** certificate fingerprint, after that, you have to go on [Google Credentials Manager](https://console.developers.google.com/apis/credentials), and manually create a credential for **OAuth2 client** with your **Release** certificate fingerprint. This is necessary to your application work on both Development and Production releases.
+* Ensure that you are using the correct alias name while generating the fingerprint.
+```
+$ keytool -exportcert -keystore <path-to-debug-or-production-keystore> -list -v -alias <alias-name>
+```
 Login on Android will use the accounts signed in on the user's device.
 
 ### Web Client Id
@@ -67,29 +80,48 @@ Login on Android will use the accounts signed in on the user's device.
 If you want to get an `idToken` or `serverAuthCode` back from the Sign In Process, you will need to pass the client ID for your project's web application. This can be found on your project's API credentials page on the [Google Developer's Console](https://console.developers.google.com/).
 
 ## 4. Installation (PhoneGap CLI / Cordova CLI)
-This plugin is compatible with [Cordova Plugman](https://github.com/apache/cordova-plugman), compatible with [PhoneGap 3.0 CLI](http://docs.phonegap.com/en/3.0.0/guide_cli_index.md.html#The%20Command-line%20Interface_add_features), here's how it works with the CLI (backup your project first!):
+This plugin is compatible with:
+* [Cordova Plugman](https://github.com/apache/cordova-plugman)
+* [PhoneGap 3.0 CLI](http://docs.phonegap.com/en/3.0.0/guide_cli_index.md.html#The%20Command-line%20Interface_add_features)
+* [Ionic](http://ionic.io/) ***(must use the Cordova CLI)***
+* [Meteor JS](https://atmospherejs.com/hedcet/cordova-google-plus-native-sign-in)
 
-Using the Cordova CLI and [npm](https://www.npmjs.com/package/cordova-plugin-googleplus)
+Here's how it works (backup your project first!):
+
+Using the Cordova CLI and [npm](https://www.npmjs.com/package/cordova-plugin-googleplus):
 ```
-$ cordova plugin add cordova-plugin-googleplus --variable REVERSED_CLIENT_ID=myreversedclientid
+$ cordova plugin add cordova-plugin-googleplus --save --variable REVERSED_CLIENT_ID=myreversedclientid
 $ cordova prepare
 ```
 
-To fetch the latest version from GitHub, use
+Using the Cordova CLI to fetch the latest version from GitHub:
 ```
-$ cordova plugin add https://github.com/EddyVerbruggen/cordova-plugin-googleplus --variable REVERSED_CLIENT_ID=myreversedclientid
+$ cordova plugin add https://github.com/EddyVerbruggen/cordova-plugin-googleplus --save --variable REVERSED_CLIENT_ID=myreversedclientid
 $ cordova prepare
 ```
 
-_Please note that `myreversedclientid` is a place holder for the reversed clientId you find in your iOS configuration file. Do not surround this value with quotes._
+IMPORTANT:
+
+* _Please note that `myreversedclientid` is a place holder for the reversed clientId you find in your iOS configuration file. Do not surround this value with quotes. **(iOS only Applications)**_
+
+* _If you are building a hybrid application **(iOS and Android)**, or an Android application, you have to replace `myreversedclientid` with the reverse value of Client ID in your **Release** credential generated on step 3, on [Google Developer's Console](https://console.developers.google.com/), this will be: **"com.googleusercontent.apps.`uniqueId`"**, without quotes._
 
 GooglePlus.js is brought in automatically. There is no need to change or add anything in your html.
 
 ## 5. Installation (PhoneGap Build)
 Add this to your config.xml:
+
+For the NPM Version:
 ```xml
 <gap:plugin name="cordova-plugin-googleplus" source="npm">
   <param name="REVERSED_CLIENT_ID" value="myreversedclientid" />
+</gap:plugin>
+```
+
+For the Git version:
+```xml
+<gap:plugin spec="https://github.com/EddyVerbruggen/cordova-plugin-googleplus.git" source="git">
+    <param name="REVERSED_CLIENT_ID" value="myreversedclientid" />
 </gap:plugin>
 ```
 
@@ -114,17 +146,15 @@ function deviceReady() {
 
 ### Login
 
-The login function walks the user through the Google Auth process.
-
-All of the options are optional, however there are a few caveats.
-
-The space-separated string of `scopes` will be requested exactly as passed in. Refer to the [Google Scopes](https://developers.google.com/android/reference/com/google/android/gms/common/Scopes#constant-summary) documentation for info on valid scopes that can be requested.
+The login function walks the user through the Google Auth process. All parameters are optional, however there are a few caveats.
 
 To get an `idToken` on Android, you ***must*** pass in your `webClientId`. On iOS, the `idToken` is included in the sign in result by default.
 
-The `webClientId` and `offline` options are optional, however `offline` will only be evaluated if a `webClientId` is passed in as well. That is to say, if offline is true, but no webClientId is provided, the `serverAuthCode` will _**NOT**_ be requested.
+To get a `serverAuthCode`, you must pass in your `webClientId` _and_ set `offline` to true. If offline is true, but no webClientId is provided, the `serverAuthCode` will _**NOT**_ be requested.
 
-**Recapping**, pass in a `webClientId` to get back an `idToken` on iOS and Android. Pass in a `webClientId` _AND_ set `offline` as `true`, you'll get back an `idToken` and a `serverAuthCode` on iOS and Android. No `webClientId`, no `serverAuthCode`.
+The default scopes requested are `profile` and `email` (always requested). To request other scopes, add them as a **space-separated list** to the `scopes` parameter. They will be requested exactly as passed in. Refer to the [Google Scopes](https://developers.google.com/identity/protocols/googlescopes) documentation for info on valid scopes that can be requested. For example, `'scope': 'https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/tasks'`.
+
+Naturally, in order to use any additional scopes or APIs, they will need to be activated in your project Developer's Console.
 
 ##### Usage
 ```javascript
@@ -148,6 +178,8 @@ The success callback (second argument) gets a JSON object with the following con
  obj.email          // 'eddyverbruggen@gmail.com'
  obj.userId         // user id
  obj.displayName    // 'Eddy Verbruggen'
+ obj.familyName     // 'Verbruggen'
+ obj.givenName      // 'Eddy'
  obj.imageUrl       // 'http://link-to-my-profilepic.google.com'
  obj.idToken        // idToken that can be exchanged to verify user identity.
  obj.serverAuthCode // Auth code that can be exchanged for an access token and refresh token for offline access
@@ -233,47 +265,27 @@ You have a couple options when it comes to this exchange: you can use the Google
 As stated before, this plugin is all about user authentication and identity, so any use of the user's account beyond that needs to be implemented per use case, per application.
 
 ## 9. Troubleshooting
-- Q: After authentication I'm not redirected back to my app.
-- A: You probably changed the bundle id of your app after installing this plugin. Make sure that (on iOS) the `CFBundleURLTypes` bit in your `.plist` file is the same as the actual bundle id originating from `config.xml`.
-
 - Q: I can't get authentication to work on Android. And why is there no ANDROID API KEY?
 - A: On Android you need to execute the `keytool` steps, see the installation instructions for details.
 
 - Q: OMG $@#*! the Android build is failing
 - A: You need to have _Android Support Repository_ and _Android Support Library_ installed in the Android SDK manager. Make sure you're using a fairly up to date version of those.
 
+- Q: Why isn't this working on my Android Emulator???
+- A: Make sure you are using a Virtual Device running with a **Google APIs target and/or a Google APIs CPU**!
+
 ## 10. Changelog
-- [pre-release] 4.0.9: Android refactored to use the GoogleSignIn SDK. Modified usage. See #193
+- 5.0.3: Added the convenience method `getSigningCertificateFingerprint` to retrieve the Android cert fingerprint which is required in the Google Developer Console.
+- 5.0.2: Require linking against `SafariServices` and `CoreText` frameworks on iOS as per Google's recommendation. Added `loginHint` on iOS.
+- 5.0.0: Android GoogleSignIn SDK (See #193), iOS SDK 4.0.0, iOS compatibility with Facebook authentication plugins, added `familyName` and `givenName`.
 - 4.0.8: Fix for Android 6 where it would crash while asking for permission. Thx #166!
 - 4.0.7: Re-added a missing framework for iOS. Thx #168!
 - 4.0.6: Updated iOS GoogleSignIn SDK to 2.4.0. Thx #153!
-- 4.0.5: Fixed a broken import on iOS
-- 4.0.4: Using framework tags again for Android.
+- 4.0.5: Fixed a broken import on iOS.
+- 4.0.4: Using framework tags again for Android
 - 4.0.3: On iOS `isAvailable` always returns try since that should be fine with the new Google Sign-In framework. Re-added imageUrl to the result of Sign-In on iOS.
 - 4.0.1: Login on Android would crash the app if `isAvailable` was invoked beforehand.
 - 4.0.0: Removed the need for `iosApiKey`, reverted Android to Google playservices framework for wider compatibility, documented scopes feature a bit.
 - 3.0.0: Using Google Sign-In for iOS, instead of Google+.
 - 1.1.0: Added `isAvailable`, for issue [#37](https://github.com/EddyVerbruggen/cordova-plugin-googleplus/issues/37)
-- 1.0.0: Initial version supporting iOS and Android
-
-## 11. License
-
-[The MIT License (MIT)](http://www.opensource.org/licenses/mit-license.html)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+- 1.0.0: Initial version supporting iOS and Android.
