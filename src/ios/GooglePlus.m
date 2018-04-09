@@ -7,7 +7,7 @@
  @author Eddy Verbruggen
  */
 
-/** 
+/**
   Updates to be more aligned with updated Android version and with Google.
  @date March 15, 2015
  @author Sam Muggleworth (PointSource, LLC)
@@ -72,9 +72,7 @@ Fixes issue with G+ login window not closing correctly on ios 9
             annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
     } else {
         // Other
-        return [self application:app openURL:url
-            sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
-            annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
+        return [self indentity_application_options:app openURL:url options:options];
     }
 }
 @end
@@ -132,7 +130,7 @@ Fixes issue with G+ login window not closing correctly on ios 9
     if (serverClientId != nil && offline) {
       signIn.serverClientID = serverClientId;
     }
-    
+
     if (hostedDomain != nil) {
         signIn.hostedDomain = hostedDomain;
     }
