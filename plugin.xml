@@ -28,9 +28,10 @@
 
   <!-- android -->
   <platform name="android">
+    <preference name="ANDROID_PLAY_SERVICES_VERSION" default="11.8.0"/>
 
-    <framework src="com.google.android.gms:play-services-auth:11.8.0" />
-    <framework src="com.google.android.gms:play-services-identity:11.8.0" />
+    <framework src="com.google.android.gms:play-services-auth:$ANDROID_PLAY_SERVICES_VERSION" />
+    <framework src="com.google.android.gms:play-services-identity:$ANDROID_PLAY_SERVICES_VERSION" />
 
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="GooglePlus">
